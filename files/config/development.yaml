@@ -1,0 +1,10 @@
+application:
+  port: 3000
+database:
+  driver: sqllite
+  name: dealls_test.db
+  username: username
+  password: password
+  location: "Asia/Jakarta"
+log:
+  level: 6
