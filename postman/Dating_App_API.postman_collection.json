@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "b2b8e3d0-5f1d-4b2c-8e1a-9f9b9b9b9b9b",
 		"name": "Dating App API",
-		"description": "Collection for Dating App API endpoints",
+		"description": "Complete collection for Dating App API endpoints",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -42,118 +42,381 @@
 							"name": "Successful Response",
 							"originalRequest": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"your_password\"\n}"
 								},
 								"url": {
-									"raw": "{{base_url}}/api/v1/auth/login",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"auth",
-										"login"
-									]
+									"raw": "{{base_url}}/api/v1/auth/login"
 								}
 							},
 							"status": "OK",
 							"code": 200,
 							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
+							"header": [],
 							"cookie": [],
 							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"email\": \"user@example.com\",\n        \"name\": \"John Doe\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"your_password\",\n    \"name\": \"New User\"\n}"
 						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Create a new user account"
+					},
+					"response": [
 						{
-							"name": "Invalid Credentials",
+							"name": "Successful Response",
 							"originalRequest": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
+								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"wrong_password\"\n}"
+									"raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"your_password\",\n    \"name\": \"New User\"\n}"
 								},
 								"url": {
-									"raw": "{{base_url}}/api/v1/auth/login",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"auth",
-										"login"
-									]
+									"raw": "{{base_url}}/api/v1/auth/signup"
 								}
 							},
-							"status": "Unauthorized",
-							"code": 401,
+							"status": "Created",
+							"code": 201,
 							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
+							"header": [],
 							"cookie": [],
-							"body": "{\n    \"error\": \"Invalid credentials\"\n}"
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"email\": \"newuser@example.com\",\n        \"name\": \"New User\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile"
+							]
 						},
+						"description": "Get current user's profile"
+					},
+					"response": [
 						{
-							"name": "Invalid Request",
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/profile"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\",\n    \"photos\": [\n        {\n            \"id\": \"223e4567-e89b-12d3-a456-426614174000\",\n            \"url\": \"https://example.com/photos/1.jpg\",\n            \"is_primary\": true\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile"
+							]
+						},
+						"description": "Update current user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/profile"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "Get Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/matches",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"matches"
+							]
+						},
+						"description": "Get all matches for current user"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/matches"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"323e4567-e89b-12d3-a456-426614174000\",\n        \"user1_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"user2_id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"matched_at\": \"2025-02-16T22:55:41+07:00\",\n        \"status\": \"active\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Like Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/:id/like",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								":id",
+								"like"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "423e4567-e89b-12d3-a456-426614174000",
+									"description": "ID of the profile to like"
+								}
+							]
+						},
+						"description": "Like another user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response - No Match",
 							"originalRequest": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"email\": \"invalid_email\",\n    \"password\": \"\"\n}"
-								},
+								"header": [],
 								"url": {
-									"raw": "{{base_url}}/api/v1/auth/login",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"auth",
-										"login"
-									]
+									"raw": "{{base_url}}/api/v1/profile/:id/like"
 								}
 							},
-							"status": "Bad Request",
-							"code": 400,
+							"status": "OK",
+							"code": 200,
 							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
+							"header": [],
 							"cookie": [],
-							"body": "{\n    \"error\": \"Invalid request body\"\n}"
+							"body": "{\n    \"success\": true\n}"
+						},
+						{
+							"name": "Successful Response - Match Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/profile/:id/like"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"match\": {\n        \"id\": \"323e4567-e89b-12d3-a456-426614174000\",\n        \"user1_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"user2_id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"matched_at\": \"2025-02-16T22:55:41+07:00\",\n        \"status\": \"active\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Pass Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/:id/pass",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								":id",
+								"pass"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "423e4567-e89b-12d3-a456-426614174000",
+									"description": "ID of the profile to pass"
+								}
+							]
+						},
+						"description": "Pass on another user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/profile/:id/pass"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Potential Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/potential",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"profile",
+								"potential"
+							]
+						},
+						"description": "Get potential matches for the current user"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/profile/potential"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"name\": \"Jane Doe\",\n        \"bio\": \"Product designer who loves traveling\",\n        \"age\": 26,\n        \"gender\": \"female\",\n        \"location\": \"San Francisco, CA\",\n        \"photos\": [\n            {\n                \"id\": \"523e4567-e89b-12d3-a456-426614174000\",\n                \"url\": \"https://example.com/photos/2.jpg\",\n                \"is_primary\": true\n            }\n        ]\n    }\n]"
 						}
 					]
 				}
@@ -184,6 +447,11 @@
 		{
 			"key": "base_url",
 			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_jwt_token_here",
 			"type": "string"
 		}
 	]
