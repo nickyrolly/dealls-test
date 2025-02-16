@@ -10,3 +10,7 @@ init: .bin-validator
 	@go mod tidy
 	@sleep 5
 	@make migrate
+
+.PHONY: test
+test:
+	go test -v -race -cover ./...

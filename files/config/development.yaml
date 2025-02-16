@@ -1,10 +1,13 @@
 application:
-  port: 3000
+  port: 8080
 database:
   driver: sqllite
   name: dealls_test.db
   username: username
   password: password
   location: "Asia/Jakarta"
+redis:
+  general_redis:
+    server: 127.0.0.1:6379
 log:
   level: 6

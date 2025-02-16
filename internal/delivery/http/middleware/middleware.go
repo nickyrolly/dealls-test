@@ -1,155 +1,276 @@
 package middleware
 
 import (
+	"context"
+	"encoding/base64"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/gorilla/context"
-	"github.com/nickyrolly/dealls-test/common"
+	"github.com/gomodule/redigo/redis"
+	"github.com/google/uuid"
+	"github.com/nickyrolly/dealls-test/internal/common"
+	"github.com/nickyrolly/dealls-test/internal/services/user"
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-const ALLOWED_HEADERS = "Cookie, Origin, Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, X-UserID, X-Userid"
+// Middleware handles all HTTP middleware functionality
+type Middleware struct {
+	log       *logrus.Logger
+	db        *gorm.DB
+	redisPool *redis.Pool
+	jwtSecret string
+}
 
-func CorsMiddleware(nextHandler http.Handler) http.Handler {
+// NewMiddleware creates a new Middleware instance
+func NewMiddleware(log *logrus.Logger, db *gorm.DB, redisPool *redis.Pool, jwtSecret string) *Middleware {
+	return &Middleware{
+		log:       log,
+		db:        db,
+		redisPool: redisPool,
+		jwtSecret: jwtSecret,
+	}
+}
+
+type contextKey string
+
+const (
+	userContextKey      contextKey = "user"
+	userIDContextKey    contextKey = "user_id"
+	claimsContextKey    contextKey = "claims"
+	requestIDContextKey contextKey = "request_id"
+)
+
+// Session middleware checks if the user has a valid session
+func (m *Middleware) Session(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		// Get session token from cookie
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			m.log.Warnf("No session token found: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Get session from Redis
+		conn := m.redisPool.Get()
+		defer conn.Close()
+
+		userID, err := redis.String(conn.Do("GET", cookie.Value))
+		if err != nil {
+			m.log.Warnf("Invalid session token: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Set user ID in context
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, userIDContextKey, userID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// BasicAuth middleware handles basic authentication
+func (m *Middleware) BasicAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get Authorization header
+		auth := r.Header.Get("Authorization")
+		if auth == "" {
+			m.log.Warn("No Authorization header")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Check if it's Basic auth
+		const prefix = "Basic "
+		if !strings.HasPrefix(auth, prefix) {
+			m.log.Warn("Not Basic auth")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Decode base64 credentials
+		payload, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
+		if err != nil {
+			m.log.Warnf("Invalid base64: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Split into username and password
+		pair := strings.SplitN(string(payload), ":", 2)
+		if len(pair) != 2 {
+			m.log.Warn("Invalid auth format")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		email := pair[0]
+		password := pair[1]
+
+		// Find user in database
+		var user user.Entity
+		if err := m.db.Where("email = ?", email).First(&user).Error; err != nil {
+			m.log.Warnf("User not found: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Verify password
+		if !user.VerifyPassword(password) {
+			m.log.Warn("Invalid password")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Set user in context
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, userContextKey, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// JWT middleware handles JWT authentication
+func (m *Middleware) JWT(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get Authorization header
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			m.log.Warn("No Authorization header")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Check if it's Bearer auth
+		const prefix = "Bearer "
+		if !strings.HasPrefix(authHeader, prefix) {
+			m.log.Warn("Not Bearer auth")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Get token
+		tokenString := authHeader[len(prefix):]
+
+		// Parse and validate token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Validate signing method
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(m.jwtSecret), nil
+		})
+
+		if err != nil {
+			m.log.Warnf("Invalid token: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Get claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			m.log.Warn("Invalid claims")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Set claims in context
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, claimsContextKey, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// CORS middleware handles Cross-Origin Resource Sharing
+func (m *Middleware) CORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", ALLOWED_HEADERS)
-		w.Header().Set("Access-Control-Expose-Headers", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		nextHandler.ServeHTTP(w, r)
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }
 
-func BasicMiddleware(nextHandler http.Handler) http.Handler {
+// RequireJSON middleware ensures the request has JSON content type
+func (m *Middleware) RequireJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		email, password, ok := r.BasicAuth()
-		if !ok {
-			common.CustomResponseAPI(w, r, http.StatusUnauthorized, map[string]interface{}{"success": false, "error_message": "Unauthorized"})
+		// Check Content-Type header
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/json" {
+			m.log.Warnf("Invalid Content-Type: %s", contentType)
+			http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
 			return
 		}
 
-		if email == "" {
-			log.Println("[BasicMiddleware] Empty Email")
-			common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{"success": false, "error_message": "email cannot be empty"})
-			return
-		}
-
-		if password == "" {
-			log.Println("[BasicMiddleware] Empty Password")
-			common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{"success": false, "error_message": "email cannot be empty"})
-			return
-		}
-
-		var user UserSession
-		// userIdShort := strings.Replace(passcode, "-", "", -1)
-		// userIdInt, err := strconv.ParseInt(userIdShort, 10, 64)
-		// if err != nil {
-		// 	log.Println("[BasicMiddleware] Passcode parse error")
-		// 	common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{"success": false, "error_message": "passcode parse error"})
-		// 	return
-		// }
-		user.Email = email
-		user.Password = password
-
-		context.Set(r, "user", user)
-		defer context.Clear(r)
-
-		nextHandler.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }
 
-type Credentials struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type Claims struct {
-	Email string `json:"email"`
-	jwt.RegisteredClaims
-}
-
-var jwtKey = []byte("key_exam_x_user")
-
-func AuthenticationMiddleware(nextHandler http.Handler) http.Handler {
+// Recover middleware handles panic recovery
+func (m *Middleware) Recover(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var creds Credentials
-		// var isCredentialAuthentication bool
-		user := UserSession{}
+		defer func() {
+			if err := recover(); err != nil {
+				m.log.Errorf("Panic recovered: %v", err)
+				response := common.ErrorResponse{
+					Error: "Internal server error",
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(response)
+			}
+		}()
 
-		// Get the JSON body and decode into credentials
-		err := json.NewDecoder(r.Body).Decode(&creds)
-		if err != nil {
-			// If the structure of the body is wrong, return an HTTP error
-			log.Println("[AuthenticationMiddleware] Cred Decoder err", err)
-			common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{"success": false, "error_message": "Pastikan nomor pendaftaran / level pendidikan / password Anda benar."})
-			return
-		}
-
-		// passcodeShort := strings.Replace(creds.PassCode, "-", "", -1)
-		// passcodeInt, err := strconv.ParseInt(passcodeShort, 10, 64)
-		// if err != nil {
-		// 	log.Println("[AuthenticationMiddleware] Cred Decoder err creds.PassCode: "+creds.PassCode, err)
-
-		// 	common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{"success": false, "error_message": "Pastikan nomor pendaftaran / level pendidikan / password Anda benar."})
-
-		// 	return
-		// }
-
-		user, err = credentialCheck(r, creds.Email, creds.Password)
-		if err != nil {
-			log.Println("[AuthenticationMiddleware] user credential error, passcodeInt: "+creds.Email, err)
-
-			common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{"success": false, "error_message": "Pastikan nomor pendaftaran / level pendidikan / password Anda benar."})
-			return
-		}
-
-		examinationTime := time.Now()
-		expirationTime := examinationTime.Add(360 * time.Minute)
-		claims := &Claims{
-			Email: creds.Email,
-			RegisteredClaims: jwt.RegisteredClaims{
-				// In JWT, the expiry time is expressed as unix milliseconds
-				ExpiresAt: jwt.NewNumericDate(expirationTime),
-			},
-		}
-
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		tokenString, err := token.SignedString(jwtKey)
-		if err != nil {
-			log.Println("[AuthenticationMiddleware] Token Signed err : ", err)
-			common.CustomResponseAPI(w, r, http.StatusUnauthorized, map[string]interface{}{"success": false, "error_message": "Unauthorized"})
-			return
-		}
-
-		// if staging
-		// http.SetCookie(w, &http.Cookie{
-		// 	Name:     "X_STP",
-		// 	Value:    tokenString,
-		// 	Expires:  expirationTime,
-		// 	HttpOnly: true,
-		// 	Secure:   true,
-		// 	SameSite: http.SameSiteNoneMode,
-		// })
-
-		user.SessionToken = tokenString
-		user.SessionExpirationTime = expirationTime
-		context.Set(r, "user", user)
-		defer context.Clear(r)
-
-		// http.SetCookie(w, &http.Cookie{
-		// 	Name:    "X_STP",
-		// 	Value:   tokenString,
-		// 	Expires: expirationTime,
-		// })
-
-		nextHandler.ServeHTTP(w, r)
-
+		next.ServeHTTP(w, r)
 	})
+}
+
+// Logger middleware logs HTTP requests
+func (m *Middleware) Logger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// Create a response wrapper to capture the status code
+		rw := &responseWriter{w, http.StatusOK}
+
+		// Set request ID in context
+		requestID := uuid.New().String()
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, requestIDContextKey, requestID)
+
+		next.ServeHTTP(rw, r.WithContext(ctx))
+
+		// Log request details
+		m.log.WithFields(logrus.Fields{
+			"method":     r.Method,
+			"path":       r.URL.Path,
+			"status":     rw.status,
+			"duration":   time.Since(start),
+			"request_id": requestID,
+		}).Info("HTTP request")
+	})
+}
+
+// responseWriter wraps http.ResponseWriter to capture status code
+type responseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
 }
