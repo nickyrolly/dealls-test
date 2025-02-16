@@ -23,11 +23,14 @@ func main() {
 		Password: cfg.GetString("database.password"),
 	})
 
+	redis := config.NewRedis(cfg)
+
 	config.Bootstrap(&config.BootstrapConfig{
-		Config: cfg,
-		Router: router,
-		Log:    log,
-		DB:     db,
+		Config:       cfg,
+		Router:       router,
+		Log:          log,
+		DB:           db,
+		RedisGeneral: redis,
 	})
 
 	fmt.Println("Service Running on : ", ":"+cfg.GetString("application.port"))

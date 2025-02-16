@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"time"
 
 	"github.com/nickyrolly/dealls-test/internal/config"
+	"github.com/nickyrolly/dealls-test/internal/services/profile"
 	"github.com/nickyrolly/dealls-test/internal/services/user"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -20,38 +24,61 @@ func main() {
 	// runtime env
 	env := os.Getenv("ENV")
 
-	// Define models
-	var userModel = &user.Entity{}
-	// var memberModel = &member.Entity{}
-	// var orderModel = &order.Entity{}
+	// Define models to migrate
+	models := []interface{}{
+		&user.Entity{},            // Base user model
+		&profile.UserProfile{},    // Extended user profile
+		&profile.UserPhoto{},      // User photos
+		&profile.UserPreference{}, // User preferences
+		&profile.UserMatch{},      // User matches
+		&profile.UserLike{},       // User likes
+	}
 
-	if err := db.Migrator().AutoMigrate(userModel); err != nil {
-		log.Errorf("Migration error : %+v", err)
+	// Migrate all tables
+	for _, model := range models {
+		if err := db.Migrator().AutoMigrate(model); err != nil {
+			log.Errorf("Migration error for %T: %+v", model, err)
+			return
+		}
+		log.Infof("Successfully migrated %T", model)
 	}
 
 	// Seeder for development
 	if env == "development" {
 		var email string = "nickyrolly1@gmail.com"
-		result := db.First(userModel, "email = ?", email)
+		var existingUser user.Entity
+		result := db.Where("email = ?", email).First(&existingUser)
+
 		if result.Error != nil {
-			log.Errorf("Create seed development error : %+v", result.Error)
-		}
-
-		if result.RowsAffected != 0 {
-			log.Warnf("Development seed data already exist")
-		}
-
-		if result.RowsAffected < 1 {
-			var newUser = user.Entity{
-				Username: "administrator",
-				Email:    email,
-			}
-
-			result := db.Create(&newUser)
-			if result.Error != nil {
-				log.Errorf("Create database error : %+v", result.Error)
-				panic(result.Error)
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				// Record not found is expected for new users
+				log.Info("No existing user found, proceeding with creation")
+			} else {
+				log.Errorf("Error checking for existing user: %+v", result.Error)
+				return
 			}
 		}
+
+		if result.RowsAffected > 0 {
+			log.Warnf("Development seed data already exists for email: %s", email)
+			return
+		}
+
+		// Create new user if not found
+		newUser := user.Entity{
+			Email:        email,
+			PasswordHash: "$2a$10$6jM7G7hXMBQGBOgCYR.tB.cV3IgzKGx4ZhkqG4GHion0/eqfGHhPi", // hashed value for "password123"
+			FirstName:    "Admin",
+			DateOfBirth:  time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
+			Gender:       "other",
+		}
+
+		result = db.Create(&newUser)
+		if result.Error != nil {
+			log.Errorf("Failed to create seed user: %+v", result.Error)
+			return
+		}
+
+		log.Infof("Successfully created seed user with email: %s", email)
 	}
 }
