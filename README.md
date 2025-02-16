@@ -24,13 +24,6 @@ cd dealls-test
 Create a `.env` file in the root directory:
 
 ```bash
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=dating_app
-DB_SSL_MODE=disable
 
 # Redis Configuration
 REDIS_HOST=localhost
