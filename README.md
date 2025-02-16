@@ -7,9 +7,8 @@ A modern dating application API built with Go, featuring user authentication, pr
 Before running the application, make sure you have the following installed:
 
 - Go 1.21 or higher
-- PostgreSQL 14 or higher
+- SQLLite3
 - Redis 7 or higher
-- Docker (optional, for containerized deployment)
 
 ## Getting Started
 
@@ -47,27 +46,7 @@ JWT_EXPIRATION_HOURS=24
 SERVER_PORT=8080
 ```
 
-### 3. Database Setup
-
-#### Using Local PostgreSQL
-
-1. Create the database:
-```bash
-createdb dating_app
-```
-
-2. Run migrations:
-```bash
-go run cmd/migrate/main.go
-```
-
-#### Using Docker
-
-```bash
-docker-compose up -d db redis
-```
-
-### 4. Running the Application
+### 3. Running the Application
 
 There are several ways to run the application:
 
@@ -83,49 +62,26 @@ This command will:
 - Run necessary migrations
 - Set up dependencies
 
-2. Run the application:
-```bash
-./app-dealls-test
-```
-
-#### Manual Setup
-
-1. Install dependencies:
+2. Install Dependencies:
 ```bash
 go mod tidy
 go mod vendor
 ```
 
-2. Build the application:
-```bash
-go build -o app-dealls-test cmd/app/*.go
-```
-
 3. Run the application:
 ```bash
-./app-dealls-test
+make run
 ```
 
-#### Using Docker
 
-1. Build the Docker image:
-```bash
-docker build -t dealls-test .
-```
-
-2. Run the container:
-```bash
-docker run -p 8080:8080 --env-file .env dealls-test
-```
-
-### 5. Testing
+### 4. Testing
 
 Run the test suite:
 ```bash
 make test
 ```
 
-### 6. API Documentation
+### 5. API Documentation
 
 The API documentation is available in the `postman` directory. Import the collection into Postman to explore the available endpoints.
 
@@ -171,27 +127,3 @@ The API documentation is available in Postman format. Import the following files
 ├── pkg/            # Shared packages
 └── scripts/        # Helper scripts
 ```
-
-### Running Tests
-
-```bash
-go test ./...
-```
-
-### Code Generation
-
-```bash
-go generate ./...
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
