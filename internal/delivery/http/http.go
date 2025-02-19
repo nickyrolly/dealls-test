@@ -21,6 +21,7 @@ type Config struct {
 	RedisPool                *redis.Pool
 	AuthenticationController *authentication.Controller
 	ProfileController        *profile.Controller
+	MatchesController        *MatchController
 }
 
 func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config {
@@ -93,11 +94,13 @@ func Setup(c *Config) error {
 			r.Route("/profile", func(r chi.Router) {
 				r.Get("/", c.ProfileController.HandleGetProfile)
 				r.Put("/", c.ProfileController.HandleUpdateProfile)
-				r.Get("/matches", c.ProfileController.HandleGetMatches)
-				r.Post("/like/{id}", c.ProfileController.HandleLikeProfile)
-				r.Post("/pass/{id}", c.ProfileController.HandlePassProfile)
-				r.Get("/potential", c.ProfileController.HandleGetPotentialMatches)
+				r.Put("/preferences", c.ProfileController.HandleUpdatePreferences)
 			})
+			r.Get("/potential", c.ProfileController.HandleGetPotentialMatches)
+			// r.Get("/matches", c.MatchesController.HandleGetMatches)
+			r.Post("/like/{id}", c.ProfileController.HandleLikeProfile)
+			r.Post("/pass/{id}", c.ProfileController.HandlePassProfile)
+
 		})
 	})
 

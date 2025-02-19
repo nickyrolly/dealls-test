@@ -171,63 +171,63 @@ func (c *ProfileController) HandleUpdateProfile(w http.ResponseWriter, r *http.R
 	})
 }
 
-func (c *ProfileController) HandleUpdatePreferences(w http.ResponseWriter, r *http.Request) {
-	userSession, ok := gorilla_context.Get(r, "user").(middleware.UserSession)
-	if !ok {
-		c.log.Error("User session not found in context")
-		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"error":   "User session not found",
-		})
-		return
-	}
+// func (c *ProfileController) HandleUpdatePreferences(w http.ResponseWriter, r *http.Request) {
+// 	userSession, ok := gorilla_context.Get(r, "user").(middleware.UserSession)
+// 	if !ok {
+// 		c.log.Error("User session not found in context")
+// 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+// 			"success": false,
+// 			"error":   "User session not found",
+// 		})
+// 		return
+// 	}
 
-	userID, err := uuid.Parse(userSession.ID)
-	if err != nil {
-		c.log.WithError(err).Error("Failed to parse user ID")
-		common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{
-			"success": false,
-			"error":   "Invalid user ID",
-		})
-		return
-	}
+// 	userID, err := uuid.Parse(userSession.ID)
+// 	if err != nil {
+// 		c.log.WithError(err).Error("Failed to parse user ID")
+// 		common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{
+// 			"success": false,
+// 			"error":   "Invalid user ID",
+// 		})
+// 		return
+// 	}
 
-	var pref profile.UserPreference
-	if err := json.NewDecoder(r.Body).Decode(&pref); err != nil {
-		c.log.WithError(err).Error("Failed to decode request body")
-		common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{
-			"success": false,
-			"error":   "Invalid request format",
-		})
-		return
-	}
+// 	var pref profile.UserPreference
+// 	if err := json.NewDecoder(r.Body).Decode(&pref); err != nil {
+// 		c.log.WithError(err).Error("Failed to decode request body")
+// 		common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{
+// 			"success": false,
+// 			"error":   "Invalid request format",
+// 		})
+// 		return
+// 	}
 
-	// Set user ID
-	pref.UserID = userID
+// 	// Set user ID
+// 	pref.UserID = userID
 
-	// Update preferences
-	if err := c.service.UpdateUserPreference(&pref); err != nil {
-		c.log.WithError(err).Error("Failed to update user preferences")
-		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"error":   "Failed to update preferences",
-		})
-		return
-	}
+// 	// Update preferences
+// 	if err := c.service.UpdateUserPreference(&pref); err != nil {
+// 		c.log.WithError(err).Error("Failed to update user preferences")
+// 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+// 			"success": false,
+// 			"error":   "Failed to update preferences",
+// 		})
+// 		return
+// 	}
 
-	// Get updated preferences
-	updatedPref, err := c.service.GetUserPreference(userID)
-	if err != nil {
-		c.log.WithError(err).Error("Failed to get updated user preferences")
-		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"error":   "Failed to get updated preferences",
-		})
-		return
-	}
+// 	// Get updated preferences
+// 	updatedPref, err := c.service.GetUserPreference(userID)
+// 	if err != nil {
+// 		c.log.WithError(err).Error("Failed to get updated user preferences")
+// 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+// 			"success": false,
+// 			"error":   "Failed to get updated preferences",
+// 		})
+// 		return
+// 	}
 
-	common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
-		"success":     true,
-		"preferences": updatedPref,
-	})
-}
+// 	common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
+// 		"success":     true,
+// 		"preferences": updatedPref,
+// 	})
+// }

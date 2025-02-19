@@ -37,13 +37,19 @@ func Bootstrap(config *BootstrapConfig) {
 		profileSvc,
 	)
 
+	matchController := http.NewMatchController(
+		config.Log,
+		profileSvc,
+	)
+
 	// Initialize route configuration with all dependencies
 	route := &http.Config{
 		Router:                   config.Router,
 		AuthenticationController: authController,
 		ProfileController:        profileController,
-		RedisPool:               config.RedisGeneral,
-		DB:                      config.DB,
+		MatchesController:        matchController,
+		RedisPool:                config.RedisGeneral,
+		DB:                       config.DB,
 	}
 
 	// Setup routes
