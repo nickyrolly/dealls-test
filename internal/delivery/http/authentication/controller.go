@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -36,6 +37,7 @@ func NewController(service *authentication.Service, log *logrus.Logger) *Control
 }
 
 func (c *Controller) SignUp(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("--- Signup")
 	var req SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.log.WithError(err).Error("Failed to decode signup request")
@@ -66,14 +68,7 @@ func (c *Controller) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		c.log.WithError(err).Error("Failed to decode login request")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	user, token, err := c.service.Login(req.Email, req.Password)
+	userID, token, err := c.service.Login(r)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to login user")
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -83,7 +78,7 @@ func (c *Controller) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"user":  user,
-		"token": token,
+		"userID": userID,
+		"token":  token,
 	})
 }

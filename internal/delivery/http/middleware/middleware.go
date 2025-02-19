@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gorilla/context"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gomodule/redigo/redis"
@@ -16,6 +17,8 @@ import (
 	"github.com/nickyrolly/dealls-test/internal/services/user"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	"errors"
 )
 
 // Middleware handles all HTTP middleware functionality
@@ -68,9 +71,10 @@ func (m *Middleware) Session(next http.Handler) http.Handler {
 		}
 
 		// Set user ID in context
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, userIDContextKey, userID)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		context.Set(r, userIDContextKey, userID)
+		defer context.Clear(r)
+
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -128,9 +132,10 @@ func (m *Middleware) BasicAuth(next http.Handler) http.Handler {
 		}
 
 		// Set user in context
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, userContextKey, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		context.Set(r, userContextKey, user)
+		defer context.Clear(r)
+
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -138,6 +143,7 @@ func (m *Middleware) BasicAuth(next http.Handler) http.Handler {
 func (m *Middleware) JWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get Authorization header
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			m.log.Warn("No Authorization header")
@@ -156,9 +162,11 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 		// Get token
 		tokenString := authHeader[len(prefix):]
 
+		fmt.Println("====== token string ======", tokenString)
 		// Parse and validate token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Validate signing method
+			fmt.Println("====== token ======", token)
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -179,10 +187,95 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 			return
 		}
 
+		fmt.Println("--- JWT Success")
 		// Set claims in context
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, claimsContextKey, claims)
-		next.ServeHTTP(w, r.WithContext(ctx))
+
+		context.Set(r, claimsContextKey, claims)
+		defer context.Clear(r)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// AuthenticateCredentials middleware checks credentials and manages authentication
+func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("[AuthenticateCredentials]")
+		var credentials struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		// Decode credentials from request body
+		if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+			m.log.WithError(err).Error("Failed to decode credentials")
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		// Check Redis cache first
+		redisKey := fmt.Sprintf("auth:%s", credentials.Email)
+
+		conn := m.redisPool.Get()
+		defer conn.Close()
+
+		userJSON, redisErr := redis.String(conn.Do("GET", redisKey))
+		if redisErr == nil {
+			fmt.Println("[AuthenticateCredentials] User found in Redis")
+			// Found in Redis, unmarshal and verify password
+			var user user.Entity
+			if unmarshalErr := json.Unmarshal([]byte(userJSON), &user); unmarshalErr == nil {
+				// Verify password
+				if user.VerifyPassword(credentials.Password) {
+					// Set user in context
+					context.Set(r, "user", user.ID.String())
+					defer context.Clear(r)
+
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+		}
+
+		// Check database if not found in Redis
+		fmt.Println("[AuthenticateCredentials] User Not found in Redis, Check DB")
+		var user user.Entity
+		if err := m.db.Where("email = ?", credentials.Email).First(&user).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+				return
+			}
+			m.log.WithError(err).Error("Database error")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Verify password
+		if !user.VerifyPassword(credentials.Password) {
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			return
+		}
+
+		fmt.Println("[AuthenticateCredentials] User found in DB")
+
+		// Cache user in Redis
+		userJSON1, _ := json.Marshal(user)
+		// m.redisPool.Set(redisKey, userJSON, 24*time.Hour)
+
+		// _, redisErr = conn.Do("SETEX", redisKey, 24*time.Hour, userJSON1) // 900 seconds = 15 minutes
+		_, redisErr = conn.Do("SETEX", redisKey, 900, userJSON1) // 900 seconds = 15 minutes
+		if redisErr != nil {
+			// Log Redis error but don't fail the request
+			fmt.Printf("Redis cache error: %v\n", redisErr)
+		}
+
+		fmt.Println("[AuthenticateCredentials] User cached in Redis")
+
+		// Set user in context
+		context.Set(r, "user", user.ID.String())
+		defer context.Clear(r)
+
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -248,10 +341,10 @@ func (m *Middleware) Logger(next http.Handler) http.Handler {
 
 		// Set request ID in context
 		requestID := uuid.New().String()
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, requestIDContextKey, requestID)
+		context.Set(r, requestIDContextKey, requestID)
+		defer context.Clear(r)
 
-		next.ServeHTTP(rw, r.WithContext(ctx))
+		next.ServeHTTP(rw, r)
 
 		// Log request details
 		m.log.WithFields(logrus.Fields{

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -49,10 +48,8 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 }
 
 func Setup(c *Config) error {
-	fmt.Println("========== Dealls Setup API ==========")
-
 	// Initialize middleware
-	mw := middleware.NewMiddleware(logrus.StandardLogger(), c.DB, c.RedisPool, "your-jwt-secret-here")
+	mw := middleware.NewMiddleware(logrus.StandardLogger(), c.DB, c.RedisPool, "jwt-5ecret")
 
 	// Apply global middleware
 	c.Router.Use(mw.Logger)
@@ -74,13 +71,17 @@ func Setup(c *Config) error {
 
 		// Authentication routes
 		r.Group(func(r chi.Router) {
-			r.Use(mw.JWT)
+			r.Use(mw.Logger)
+			r.Use(mw.Recover)
+			r.Use(mw.AuthenticateCredentials)
 			r.Post("/login", c.AuthenticationController.Login)
 		})
 
 		// API v1 routes
 		r.Route("/v1", func(r chi.Router) {
 			// Apply authentication check for all /v1 routes
+			r.Use(mw.Logger)
+			r.Use(mw.Recover)
 			r.Use(mw.JWT)
 
 			// Handle preflight requests for CORS

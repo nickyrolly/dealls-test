@@ -2,9 +2,11 @@ package profile
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
+	gorilla_context "github.com/gorilla/context"
 	"github.com/nickyrolly/dealls-test/internal/services/profile"
 	"github.com/sirupsen/logrus"
 )
@@ -22,27 +24,39 @@ func NewController(log *logrus.Logger, service *profile.Service) *Controller {
 }
 
 func (c *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("")
+	fmt.Println("--- HandleGetProfile")
 	w.Header().Set("Content-Type", "application/json")
 
 	// Get user ID from context
-	userIDStr := r.Context().Value("user_id").(string)
+	userIDStr, ok := gorilla_context.Get(r, "user").(string)
+	fmt.Println("userIDStr : ", userIDStr)
+	if !ok {
+		c.log.Error("User session not found in context")
+
+		return
+	}
+
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		c.log.WithError(err).Error("Failed to parse user ID")
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		fmt.Println("context userID : ", err)
+		// c.log.WithError(err).Error("Failed to parse user ID")
+		// http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	// Get profile
 	userProfile, err := c.service.GetUserProfile(userID)
 	if err != nil {
-		c.log.WithError(err).Error("Failed to get user profile")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		fmt.Println("get user profile : ", err)
+		// c.log.WithError(err).Error("Failed to get user profile")
+		// http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	if userProfile == nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		fmt.Println("userProfile is nil")
+		// http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
 
