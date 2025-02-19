@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type Entity struct {
@@ -17,7 +17,6 @@ type Entity struct {
 	LastName     *string    `gorm:"type:varchar(50);column:last_name"`
 	DateOfBirth  time.Time  `gorm:"type:date;not null;column:date_of_birth"`
 	Gender       string     `gorm:"type:varchar(20);not null;column:gender"`
-	Bio          *string    `gorm:"type:text;column:bio"`
 	LocationLat  *float64   `gorm:"type:decimal(10,8);column:location_lat"`
 	LocationLng  *float64   `gorm:"type:decimal(11,8);column:location_lng"`
 	LastActiveAt *time.Time `gorm:"type:timestamp;column:last_active_at"`

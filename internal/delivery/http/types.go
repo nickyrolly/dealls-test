@@ -11,7 +11,6 @@ type signupRequest struct {
 	LastName    *string   `json:"last_name,omitempty"`
 	DateOfBirth time.Time `json:"date_of_birth"`
 	Gender      string    `json:"gender"`
-	Bio         *string   `json:"bio,omitempty"`
 	LocationLat *float64  `json:"location_lat,omitempty"`
 	LocationLng *float64  `json:"location_lng,omitempty"`
 }
@@ -23,21 +22,20 @@ type basicProfileRequest struct {
 	LastName    *string    `json:"last_name,omitempty"`
 	DateOfBirth *time.Time `json:"date_of_birth,omitempty"`
 	Gender      string     `json:"gender,omitempty"`
-	Bio         *string    `json:"bio,omitempty"`
 	LocationLat *float64   `json:"location_lat,omitempty"`
 	LocationLng *float64   `json:"location_lng,omitempty"`
 }
 
 // Extended profile requests
 type extendedProfileRequest struct {
-	Height     *int      `json:"height,omitempty"`
-	Weight     *int      `json:"weight,omitempty"`
-	Occupation *string   `json:"occupation,omitempty"`
-	Education  *string   `json:"education,omitempty"`
-	Religion   *string   `json:"religion,omitempty"`
-	Ethnicity  *string   `json:"ethnicity,omitempty"`
-	Interests  []string  `json:"interests,omitempty"`
-	AboutMe    *string   `json:"about_me,omitempty"`
+	Height     *int     `json:"height,omitempty"`
+	Weight     *int     `json:"weight,omitempty"`
+	Occupation *string  `json:"occupation,omitempty"`
+	Education  *string  `json:"education,omitempty"`
+	Religion   *string  `json:"religion,omitempty"`
+	Ethnicity  *string  `json:"ethnicity,omitempty"`
+	Interests  []string `json:"interests,omitempty"`
+	AboutMe    *string  `json:"about_me,omitempty"`
 }
 
 // Preference requests

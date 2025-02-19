@@ -70,7 +70,6 @@ func (c *AuthenticationController) HandleSignup(w http.ResponseWriter, r *http.R
 		LastName:     req.LastName,
 		DateOfBirth:  req.DateOfBirth,
 		Gender:       req.Gender,
-		Bio:          req.Bio,
 		LocationLat:  req.LocationLat,
 		LocationLng:  req.LocationLng,
 	}
@@ -102,7 +101,7 @@ func (c *AuthenticationController) HandleSignup(w http.ResponseWriter, r *http.R
 	result := c.db.Create(&newUser)
 	if result.Error != nil {
 		c.log.WithError(result.Error).Error("Failed to create user")
-		
+
 		// Check for unique constraint violations
 		if strings.Contains(result.Error.Error(), "UNIQUE constraint failed: users.email") {
 			common.CustomResponseAPI(w, r, http.StatusConflict, map[string]interface{}{
@@ -236,9 +235,6 @@ func (c *AuthenticationController) HandleUpdateProfile(w http.ResponseWriter, r 
 	}
 	if req.Gender != "" {
 		user.Gender = req.Gender
-	}
-	if req.Bio != nil {
-		user.Bio = req.Bio
 	}
 	if req.LocationLat != nil {
 		user.LocationLat = req.LocationLat
