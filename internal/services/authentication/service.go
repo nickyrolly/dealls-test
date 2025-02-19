@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+
+	"github.com/gorilla/context"
 )
 
 type Service struct {
@@ -62,7 +65,7 @@ func (s *Service) SignUp(email, password, firstName string, lastName *string, da
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte("your-secret-key"))
+	tokenString, err := token.SignedString([]byte("jwt-5ecret"))
 	if err != nil {
 		return nil, "", err
 	}
@@ -70,29 +73,33 @@ func (s *Service) SignUp(email, password, firstName string, lastName *string, da
 	return newUser, tokenString, nil
 }
 
-func (s *Service) Login(email, password string) (*user.Entity, string, error) {
-	var user user.Entity
-	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, "", errors.New("invalid credentials")
-		}
-		return nil, "", err
-	}
+func (s *Service) Login(r *http.Request) (string, string, error) {
+	// var user user.Entity
+	// if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		return nil, "", errors.New("invalid credentials")
+	// 	}
+	// 	return nil, "", err
+	// }
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return nil, "", errors.New("invalid credentials")
+	// if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+	// 	return nil, "", errors.New("invalid credentials")
+	// }
+	userID, ok := context.Get(r, "user").(string)
+	if !ok {
+		return "", "", errors.New("invalid credentials")
 	}
 
 	// Generate JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID.String(),
+		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte("your-secret-key"))
+	tokenString, err := token.SignedString([]byte("jwt-5ecret"))
 	if err != nil {
-		return nil, "", err
+		return "", "", err
 	}
 
-	return &user, tokenString, nil
+	return userID, tokenString, nil
 }

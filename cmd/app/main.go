@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,9 +13,6 @@ import (
 )
 
 func main() {
-
-	fmt.Println("Hello, World!")
-
 	cfg := config.NewConfig()
 	log := config.NewLogger(cfg)
 	router := chi.NewRouter()
@@ -37,9 +33,6 @@ func main() {
 		DB:           db,
 		RedisGeneral: redis,
 	})
-
-	// fmt.Println("Service Running on : ", ":"+cfg.GetString("application.port"))
-	// log.Fatal(http.ListenAndServe(":"+cfg.GetString("application.port"), router))
 
 	// Create server
 	srv := &http.Server{
