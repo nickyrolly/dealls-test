@@ -10,14 +10,14 @@ import (
 type UserProfile struct {
 	ID         uuid.UUID `gorm:"type:uuid;primary_key;column:id"`
 	UserID     uuid.UUID `gorm:"type:uuid;not null;column:user_id"`
-	Height     *int      `gorm:"type:int;column:height"`
-	Weight     *int      `gorm:"type:int;column:weight"`
-	Occupation *string   `gorm:"type:varchar(100);column:occupation"`
-	Education  *string   `gorm:"type:varchar(100);column:education"`
-	Religion   *string   `gorm:"type:varchar(50);column:religion"`
-	Ethnicity  *string   `gorm:"type:varchar(50);column:ethnicity"`
-	Interests  *string   `gorm:"type:text;column:interests"`
-	AboutMe    *string   `gorm:"type:text;column:about_me"`
+	Height     int       `gorm:"type:int;column:height"`
+	Weight     int       `gorm:"type:int;column:weight"`
+	Occupation string    `gorm:"type:varchar(100);column:occupation"`
+	Education  string    `gorm:"type:varchar(100);column:education"`
+	Religion   string    `gorm:"type:varchar(50);column:religion"`
+	Ethnicity  string    `gorm:"type:varchar(50);column:ethnicity"`
+	Interests  string    `gorm:"type:text;column:interests"`
+	AboutMe    string    `gorm:"type:text;column:about_me"`
 	CreatedAt  time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:created_at"`
 	UpdatedAt  time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:updated_at"`
 }
@@ -34,13 +34,13 @@ type UserPhoto struct {
 type UserPreference struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;column:id"`
 	UserID    uuid.UUID `gorm:"type:uuid;not null;column:user_id"`
-	MinAge    *int      `gorm:"type:int;column:min_age"`
-	MaxAge    *int      `gorm:"type:int;column:max_age"`
-	MinHeight *int      `gorm:"type:int;column:min_height"`
-	MaxHeight *int      `gorm:"type:int;column:max_height"`
-	Religion  *string   `gorm:"type:varchar(50);column:religion"`
-	Ethnicity *string   `gorm:"type:varchar(50);column:ethnicity"`
-	Distance  *int      `gorm:"type:int;column:distance"` // in kilometers
+	MinAge    int       `gorm:"type:int;column:min_age"`
+	MaxAge    int       `gorm:"type:int;column:max_age"`
+	MinHeight int       `gorm:"type:int;column:min_height"`
+	MaxHeight int       `gorm:"type:int;column:max_height"`
+	Religion  string    `gorm:"type:varchar(50);column:religion"`
+	Ethnicity string    `gorm:"type:varchar(50);column:ethnicity"`
+	Distance  int       `gorm:"type:int;column:distance"` // in kilometers
 	CreatedAt time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:created_at"`
 	UpdatedAt time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:updated_at"`
 }

@@ -2,10 +2,11 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	gorilla_context "github.com/gorilla/context"
 	"github.com/nickyrolly/dealls-test/common"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/middleware"
@@ -157,7 +158,7 @@ func (c *MatchController) HandleWithdrawLike(w http.ResponseWriter, r *http.Requ
 }
 
 func (c *MatchController) HandleGetMatches(w http.ResponseWriter, r *http.Request) {
-	userSession, ok := gorilla_context.Get(r, "user").(middleware.UserSession)
+	userIDStr, ok := gorilla_context.Get(r, "user").(string)
 	if !ok {
 		c.log.Error("User session not found in context")
 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
@@ -167,7 +168,8 @@ func (c *MatchController) HandleGetMatches(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, err := uuid.Parse(userSession.ID)
+	fmt.Println("userIDStr : ", userIDStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to parse user ID")
 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
