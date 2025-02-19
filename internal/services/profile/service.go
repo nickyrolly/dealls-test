@@ -2,6 +2,8 @@ package profile
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,6 +67,19 @@ func (s *Service) UpdateUserProfile(userID uuid.UUID, data map[string]interface{
 		} else {
 			return err
 		}
+	}
+
+	if interests, ok := data["interests"].([]interface{}); ok {
+		var interestsStr []string
+		for _, interest := range interests {
+			if str, ok := interest.(string); ok {
+				interestsStr = append(interestsStr, str)
+			} else {
+				return fmt.Errorf("interests must be a string array") // Handle error
+			}
+
+		}
+		data["interests"] = strings.Join(interestsStr, ",") // Join string dengan koma
 	}
 
 	if err := s.DB.Model(&profile).Updates(data).Error; err != nil {

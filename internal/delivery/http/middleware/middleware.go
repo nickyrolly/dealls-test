@@ -190,7 +190,7 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 		fmt.Println("--- JWT Success")
 		// Set claims in context
 
-		context.Set(r, claimsContextKey, claims)
+		context.Set(r, "user", claims["user_id"])
 		defer context.Clear(r)
 
 		next.ServeHTTP(w, r)

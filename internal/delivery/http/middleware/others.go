@@ -60,18 +60,17 @@ func credentialCheck(r *http.Request, email string, password string, redisPool *
 
 	// Convert to UserSession
 	userSession := UserSession{
-		ID:                   dbUser.ID.String(),
-		Email:                dbUser.Email,
-		PasswordHash:         dbUser.PasswordHash,
-		PhoneNumber:          dbUser.PhoneNumber,
-		FirstName:            dbUser.FirstName,
-		LastName:             dbUser.LastName,
-		DateOfBirth:          dbUser.DateOfBirth,
-		Gender:               dbUser.Gender,
-		Bio:                  dbUser.Bio,
-		LocationLat:          dbUser.LocationLat,
-		LocationLng:          dbUser.LocationLng,
-		LastActiveAt:         dbUser.LastActiveAt,
+		ID:                    dbUser.ID.String(),
+		Email:                 dbUser.Email,
+		PasswordHash:          dbUser.PasswordHash,
+		PhoneNumber:           dbUser.PhoneNumber,
+		FirstName:             dbUser.FirstName,
+		LastName:              dbUser.LastName,
+		DateOfBirth:           dbUser.DateOfBirth,
+		Gender:                dbUser.Gender,
+		LocationLat:           dbUser.LocationLat,
+		LocationLng:           dbUser.LocationLng,
+		LastActiveAt:          dbUser.LastActiveAt,
 		SessionExpirationTime: now.Add(360 * time.Minute),
 	}
 

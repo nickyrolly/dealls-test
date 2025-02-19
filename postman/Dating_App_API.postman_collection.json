@@ -154,7 +154,7 @@
 							"_postman_previewlanguage": "json",
 							"header": [],
 							"cookie": [],
-							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\",\n    \"photos\": [\n        {\n            \"id\": \"223e4567-e89b-12d3-a456-426614174000\",\n            \"url\": \"https://example.com/photos/1.jpg\",\n            \"is_primary\": true\n        }\n    ]\n}"
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\",\n    \"photos\": [\n        {\n            \"id\": \"223e4567-e89b-12d3-a456-426614174000\",\n            \"url\": \"https://example.com/photos/1.jpg\",\n            \"is_primary\": true\n        }\n    ]\n}"
 						}
 					]
 				},
@@ -174,7 +174,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/v1/profile",
@@ -197,7 +197,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+									"raw": "{\n    \"name\": \"John Doe\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/profile"
@@ -208,7 +208,7 @@
 							"_postman_previewlanguage": "json",
 							"header": [],
 							"cookie": [],
-							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
 						}
 					]
 				}
@@ -416,7 +416,7 @@
 							"_postman_previewlanguage": "json",
 							"header": [],
 							"cookie": [],
-							"body": "[\n    {\n        \"id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"name\": \"Jane Doe\",\n        \"bio\": \"Product designer who loves traveling\",\n        \"age\": 26,\n        \"gender\": \"female\",\n        \"location\": \"San Francisco, CA\",\n        \"photos\": [\n            {\n                \"id\": \"523e4567-e89b-12d3-a456-426614174000\",\n                \"url\": \"https://example.com/photos/2.jpg\",\n                \"is_primary\": true\n            }\n        ]\n    }\n]"
+							"body": "[\n    {\n        \"id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"name\": \"Jane Doe\",\n        \"age\": 26,\n        \"gender\": \"female\",\n        \"location\": \"San Francisco, CA\",\n        \"height\": 180,\n        \"weight\": 75,\n        \"occupation\": \"Software Engineer\"\n    }\n]"
 						}
 					]
 				}

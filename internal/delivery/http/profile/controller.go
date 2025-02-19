@@ -67,7 +67,15 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 
 	// Get user ID from context
-	userIDStr := r.Context().Value("user_id").(string)
+	userIDStr, ok := gorilla_context.Get(r, "user").(string)
+	fmt.Println("userIDStr : ", userIDStr)
+	if !ok {
+		c.log.Error("User session not found in context")
+
+		return
+	}
+
+	fmt.Println("userIDStr : ", userIDStr)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to parse user ID")
@@ -82,6 +90,8 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Printf("updates : %v\n", updates)
 
 	// Update profile
 	if err := c.service.UpdateUserProfile(userID, updates); err != nil {
