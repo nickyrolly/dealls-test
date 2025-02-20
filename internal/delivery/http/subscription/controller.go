@@ -1,7 +1,6 @@
 package subscription
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -33,18 +32,7 @@ func (c *Controller) HandleSubscription(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Assuming you get profileID and action from the request body
-	var request struct {
-		IsSubscribed bool `json:"is_subscribed"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		// Handle error
-		c.log.WithError(err).Error("Failed to decode request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	if err := c.service.CreateSubscription(userID, request.IsSubscribed); err != nil {
+	if err := c.service.CreateSubscription(userID); err != nil {
 		// Handle error
 		c.log.WithError(err).Error("Failed to create subscription")
 		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)

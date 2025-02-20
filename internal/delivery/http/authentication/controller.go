@@ -2,7 +2,6 @@ package authentication
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -37,7 +36,6 @@ func NewController(service *authentication.Service, log *logrus.Logger) *Control
 }
 
 func (c *Controller) SignUp(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("--- Signup")
 	var req SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.log.WithError(err).Error("Failed to decode signup request")

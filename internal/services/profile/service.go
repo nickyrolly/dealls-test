@@ -26,7 +26,6 @@ func NewService(db *gorm.DB, log *logrus.Logger) *Service {
 
 func (s *Service) GetUser(userID uuid.UUID) (*user.Entity, error) {
 	var user user.Entity
-	fmt.Printf("[GetUser] userID : %v\n", userID)
 	if err := s.DB.Where("id = ?", userID).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -38,7 +37,6 @@ func (s *Service) GetUser(userID uuid.UUID) (*user.Entity, error) {
 
 func (s *Service) GetUserProfile(userID uuid.UUID) (*UserProfile, error) {
 	var profile UserProfile
-	fmt.Printf("[GetUserProfile] userID : %v\n", userID)
 	if err := s.DB.Where("user_id = ?", userID).First(&profile).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -57,14 +55,11 @@ func (s *Service) GetUserPhotos(userID uuid.UUID) ([]UserPhoto, error) {
 }
 
 func (s *Service) GetUserPreference(userID uuid.UUID) (*UserPreference, error) {
-	fmt.Printf("[GetUserPreference] userID : %v\n", userID)
 	var pref UserPreference
 	if err := s.DB.Where("user_id = ?", userID).First(&pref).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fmt.Printf("[GetUserPreference] userID : %v not found\n", userID)
 			return nil, nil
 		}
-		fmt.Printf("[GetUserPreference] userID : %v error : %v\n", userID, err)
 		return nil, err
 	}
 	return &pref, nil

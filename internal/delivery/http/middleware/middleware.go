@@ -162,11 +162,9 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 		// Get token
 		tokenString := authHeader[len(prefix):]
 
-		fmt.Println("====== token string ======", tokenString)
 		// Parse and validate token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Validate signing method
-			fmt.Println("====== token ======", token)
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -187,9 +185,7 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println("--- JWT Success")
 		// Set claims in context
-
 		context.Set(r, "user", claims["user_id"])
 		defer context.Clear(r)
 
@@ -200,7 +196,6 @@ func (m *Middleware) JWT(next http.Handler) http.Handler {
 // AuthenticateCredentials middleware checks credentials and manages authentication
 func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("[AuthenticateCredentials]")
 		var credentials struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -221,7 +216,6 @@ func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
 
 		userJSON, redisErr := redis.String(conn.Do("GET", redisKey))
 		if redisErr == nil {
-			fmt.Println("[AuthenticateCredentials] User found in Redis")
 			// Found in Redis, unmarshal and verify password
 			var user user.Entity
 			if unmarshalErr := json.Unmarshal([]byte(userJSON), &user); unmarshalErr == nil {
@@ -238,7 +232,6 @@ func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
 		}
 
 		// Check database if not found in Redis
-		fmt.Println("[AuthenticateCredentials] User Not found in Redis, Check DB")
 		var user user.Entity
 		if err := m.db.Where("email = ?", credentials.Email).First(&user).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -256,8 +249,6 @@ func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println("[AuthenticateCredentials] User found in DB")
-
 		// Cache user in Redis
 		userJSON1, _ := json.Marshal(user)
 		// m.redisPool.Set(redisKey, userJSON, 24*time.Hour)
@@ -268,8 +259,6 @@ func (m *Middleware) AuthenticateCredentials(next http.Handler) http.Handler {
 			// Log Redis error but don't fail the request
 			fmt.Printf("Redis cache error: %v\n", redisErr)
 		}
-
-		fmt.Println("[AuthenticateCredentials] User cached in Redis")
 
 		// Set user in context
 		context.Set(r, "user", user.ID.String())

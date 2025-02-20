@@ -7,19 +7,22 @@ import (
 	"github.com/google/uuid"
 	gorilla_context "github.com/gorilla/context"
 	"github.com/nickyrolly/dealls-test/common"
+	"github.com/nickyrolly/dealls-test/internal/services/subscription"
 	"github.com/nickyrolly/dealls-test/internal/services/swipe"
 	"github.com/sirupsen/logrus"
 )
 
 type Controller struct {
-	log     *logrus.Logger
-	service *swipe.Service
+	log                 *logrus.Logger
+	service             *swipe.Service
+	serviceSubscription *subscription.Service
 }
 
-func NewController(log *logrus.Logger, service *swipe.Service) *Controller {
+func NewController(log *logrus.Logger, service *swipe.Service, serviceSubscription *subscription.Service) *Controller {
 	return &Controller{
-		log:     log,
-		service: service,
+		log:                 log,
+		service:             service,
+		serviceSubscription: serviceSubscription,
 	}
 }
 
@@ -41,15 +44,35 @@ func (c *Controller) HandleSwipe(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		// Handle error
 		c.log.WithError(err).Error("Failed to decode request body")
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		//http.Error(w, "Invalid request body", http.StatusBadRequest)
+
+		common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
+			"success": false,
+		})
 		return
 	}
 
+	var isSubscribed bool
+	if isSubscribedSubscription, err := c.serviceSubscription.CheckSubscription(userID); err != nil {
+		// Handle error
+		c.log.WithError(err).Error("Failed to get subscription")
+
+		common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
+			"success": false,
+		})
+		return
+	} else {
+		isSubscribed = isSubscribedSubscription
+	}
+
 	// Call the service to create a swipe
-	if err := c.service.CreateSwipe(userID, request.ProfileID, request.Action); err != nil {
+	if err := c.service.CreateSwipe(userID, request.ProfileID, request.Action, isSubscribed); err != nil {
 		// Handle error
 		c.log.WithError(err).Error("Failed to swipe user profile")
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+
+		common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
+			"success": false,
+		})
 		return
 	}
 

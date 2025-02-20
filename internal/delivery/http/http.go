@@ -44,7 +44,7 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 	// Initialize controllers
 	authController := authentication.NewController(authSvc, log)
 	profileController := profile.NewController(log, profileSvc)
-	swipeController := swipe.NewController(log, swipeSvc)
+	swipeController := swipe.NewController(log, swipeSvc, subscriptionSvc)
 	subscriptionController := subscription.NewController(log, subscriptionSvc)
 
 	// Create route config
@@ -94,8 +94,8 @@ func Setup(c *Config) error {
 		// API v1 routes
 		r.Route("/v1", func(r chi.Router) {
 			// Apply authentication check for all /v1 routes
-			r.Use(mw.Logger)
-			r.Use(mw.Recover)
+			// r.Use(mw.Logger)
+			// r.Use(mw.Recover)
 			r.Use(mw.JWT)
 
 			// Handle preflight requests for CORS
@@ -110,11 +110,8 @@ func Setup(c *Config) error {
 				r.Put("/preferences", c.ProfileController.HandleUpdatePreferences)
 				r.Get("/discovery", c.ProfileController.HandleGetDiscovery)
 			})
-
-			// r.Get("/matches", c.MatchesController.HandleGetMatches)
-			// r.Post("/like/{id}", c.SwipesController.HandleSwipe)
 			r.Post("/swipe", c.SwipesController.HandleSwipe)
-			r.Post("/subscription", c.SubscriptionsController.HandleSubscription)
+			r.Put("/subscription", c.SubscriptionsController.HandleSubscription)
 
 		})
 	})
