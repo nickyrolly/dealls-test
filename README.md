@@ -90,18 +90,20 @@ The API documentation is available in Postman format. Import the following files
 ### Key Endpoints
 
 1. Authentication
-   - POST `/api/v1/auth/signup` - User registration
-   - POST `/api/v1/auth/login` - User login
+   - POST `/api/signup` - User registration
+   - POST `/api/login` - User login
 
 2. Profile Management
    - GET `/api/v1/profile` - Get user profile
+   - GET `/api/v1/profile/discovery` - Get user profiles discovery (matching profiles by gender preferences)
    - PUT `/api/v1/profile` - Update profile
-   - POST `/api/v1/profile/photos` - Upload profile photo
+   - PUT `/api/v1/profile/preferences` - Update preferences
 
-3. Matching System
-   - GET `/api/v1/matches` - Get user matches
-   - POST `/api/v1/profile/{id}/like` - Like a profile
-   - POST `/api/v1/profile/{id}/pass` - Pass a profile
+3. Swipe (Pass or Like)
+   - POST `/api/v1/swipe` - Swipe action (like or pass)
+
+4. Subscription (Pass or Like)
+   - PUT `/api/v1/subscription` - Subscribe to premium package - unlock 10 swipe limiter
 
 ## Development
 
@@ -110,13 +112,16 @@ The API documentation is available in Postman format. Import the following files
 ```
 .
 ├── cmd/
-│   ├── api/        # Main application entry point
+│   ├── app/        # Main application entry point
 │   └── migrate/    # Database migration tool
 ├── internal/
 │   ├── delivery/   # HTTP handlers and middleware
-│   ├── domain/     # Business domain models and interfaces
-│   ├── repository/ # Data access layer
+│   ├── common/     # Business domain models and interfaces
+│   ├── config/     # Configuration and environment setup
+│   ├── mock/       # Mock Unit Testing
+│   ├── testutil/   # Testing helpers
 │   └── services/   # Business logic implementation
-├── pkg/            # Shared packages
-└── scripts/        # Helper scripts
-```
+├── common/         # Common configuration
+│   ├── common.go   # Common functions
+├── scripts/        # Helper scripts
+└── postman/        # Postman collection and environment

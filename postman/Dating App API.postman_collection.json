@@ -1,0 +1,396 @@
+{
+	"info": {
+		"_postman_id": "99d16b24-df5e-4ca2-96d0-8a0d6466ae24",
+		"name": "Dating App API",
+		"description": "Complete collection for Dating App API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "2700622",
+		"_collection_link": "https://warped-crescent-175377.postman.co/workspace/project-examinations~c37dc9e5-403d-4dbe-9213-2faba5cd3743/collection/2700622-99d16b24-df5e-4ca2-96d0-8a0d6466ae24?action=share&source=collection_link&creator=2700622"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Mzk4NzU5MDEsInVzZXJfaWQiOiIzNzQ1ZDQ4Mi1kM2Q0LTQyMjYtYWNlNC1iY2FhOGZmZTczYzYifQ.KsygLLX-5MvKfW2ChebFUKxeqpVMI_LFSCkMzz2VSco",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"arshya@gmail.com\",\n    \"password\": \"securePassword123\"\n}"
+						},
+						"url": "{{base_url}}/api/login",
+						"description": "Authenticate user and get JWT token"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"your_password\"\n}"
+								},
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"email\": \"user@example.com\",\n        \"name\": \"John Doe\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"leon@gmail.com\",\n    \"password\": \"securePassword123\",\n    \"phone_number\": \"+6287772440207\",\n    \"first_name\": \"Leon\",\n    \"last_name\": \"Kennedy\",\n    \"date_of_birth\": \"1997-01-01T00:00:00Z\",\n    \"gender\": \"male\"\n}"
+						},
+						"url": "{{base_url}}/api/signup",
+						"description": "Create a new user account"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"your_password\",\n    \"name\": \"New User\"\n}"
+								},
+								"url": ""
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"email\": \"newuser@example.com\",\n        \"name\": \"New User\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							}
+						],
+						"url": "{{base_url}}/api/v1/profile",
+						"description": "Get current user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\",\n    \"photos\": [\n        {\n            \"id\": \"223e4567-e89b-12d3-a456-426614174000\",\n            \"url\": \"https://example.com/photos/1.jpg\",\n            \"is_primary\": true\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Discovery",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							}
+						],
+						"url": "{{base_url}}/api/v1/profile/discovery",
+						"description": "Get current user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\",\n    \"photos\": [\n        {\n            \"id\": \"223e4567-e89b-12d3-a456-426614174000\",\n            \"url\": \"https://example.com/photos/1.jpg\",\n            \"is_primary\": true\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"height\": \"175\",\n    \"weight\": \"75\",\n    \"occupation\": \"Police\",\n    \"education\": \"Bachelor Degree\",\n    \"religion\": \"Moslem\",\n    \"ethnicity\": \"Indonesian\",\n    \"interests\": [\n        \"sport\",\n        \"gaming\"\n    ],\n    \"about_me\": \"Boy\",\n    \"is_premium\": true\n}"
+						},
+						"url": "{{base_url}}/api/v1/profile",
+						"description": "Update current user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+								},
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Profile - Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gender\" : \"female\",\n    \"min_age\" : 30,\n    \"max_age\" : 45,\n    \"min_height\" : 155,\n    \"max_height\" : 180,\n    \"religion\" :\"Moslem\",\n    \"ethnicity\" : \"Asian\",\n    \"distance\" : 200\n}"
+						},
+						"url": "{{base_url}}/api/v1/profile/preferences",
+						"description": "Update current user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+								},
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"user_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"John Doe\",\n    \"bio\": \"Software engineer who loves hiking\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"location\": \"San Francisco, CA\",\n    \"height\": 180,\n    \"weight\": 75,\n    \"occupation\": \"Software Engineer\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Swipe",
+			"item": [
+				{
+					"name": "Swipe",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"profile_id\": \"f9d67f23-ccfe-48ec-b27a-57565c8e844e\",\n    \"action\": \"like\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/api/v1/swipe",
+						"description": "Like another user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response - No Match",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true\n}"
+						},
+						{
+							"name": "Successful Response - Match Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"match\": {\n        \"id\": \"323e4567-e89b-12d3-a456-426614174000\",\n        \"user1_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"user2_id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"matched_at\": \"2025-02-16T22:55:41+07:00\",\n        \"status\": \"active\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Subscription",
+			"item": [
+				{
+					"name": "Subscription",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDAxMTEzNTMsInVzZXJfaWQiOiI5MmY0YjdjOC05ODAxLTRlMzYtOTAwYy00MmYxNjA1NWMzZWMifQ.WJoGcuPCQeqPZ7M-Dt2_ARWmrr_ry9rmGcQDkPXbQSY"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base_url}}/api/v1/subscription",
+						"description": "Like another user's profile"
+					},
+					"response": [
+						{
+							"name": "Successful Response - No Match",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"success\": true\n}"
+						},
+						{
+							"name": "Successful Response - Match Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": ""
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"match\": {\n        \"id\": \"323e4567-e89b-12d3-a456-426614174000\",\n        \"user1_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n        \"user2_id\": \"423e4567-e89b-12d3-a456-426614174000\",\n        \"matched_at\": \"2025-02-16T22:55:41+07:00\",\n        \"status\": \"active\"\n    }\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		}
+	]
+}
