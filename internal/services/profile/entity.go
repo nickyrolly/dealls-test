@@ -18,7 +18,6 @@ type UserProfile struct {
 	Ethnicity  string    `gorm:"type:varchar(50);column:ethnicity"`
 	Interests  string    `gorm:"type:text;column:interests"`
 	AboutMe    string    `gorm:"type:text;column:about_me"`
-	IsPremium  bool      `gorm:"type:boolean;not null;default:false;column:is_premium"`
 	CreatedAt  time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:created_at"`
 	UpdatedAt  time.Time `gorm:"type:timestamp;not null;default:current_timestamp;column:updated_at"`
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/nickyrolly/dealls-test/internal/config"
 	"github.com/nickyrolly/dealls-test/internal/services/profile"
+	"github.com/nickyrolly/dealls-test/internal/services/subscription"
 	"github.com/nickyrolly/dealls-test/internal/services/swipe"
 	"github.com/nickyrolly/dealls-test/internal/services/user"
 	"gorm.io/gorm"
@@ -27,13 +28,14 @@ func main() {
 
 	// Define models to migrate
 	models := []interface{}{
-		&user.Entity{},            // Base user model
-		&profile.UserProfile{},    // Extended user profile
-		&profile.UserPhoto{},      // User photos
-		&profile.UserPreference{}, // User preferences
-		&profile.UserMatch{},      // User matches
-		&profile.UserLike{},       // User likes
-		&swipe.Swipe{},            // User swipes
+		&user.Entity{},               // Base user model
+		&profile.UserProfile{},       // Extended user profile
+		&profile.UserPhoto{},         // User photos
+		&profile.UserPreference{},    // User preferences
+		&profile.UserMatch{},         // User matches
+		&profile.UserLike{},          // User likes
+		&swipe.Swipe{},               // User swipes
+		&subscription.Subscription{}, // User subscriptions
 	}
 
 	// Migrate all tables

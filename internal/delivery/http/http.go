@@ -9,9 +9,11 @@ import (
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/healthcheck"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/middleware"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/profile"
+	"github.com/nickyrolly/dealls-test/internal/delivery/http/subscription"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/swipe"
 	authService "github.com/nickyrolly/dealls-test/internal/services/authentication"
 	profileService "github.com/nickyrolly/dealls-test/internal/services/profile"
+	subscriptionService "github.com/nickyrolly/dealls-test/internal/services/subscription"
 	swipeService "github.com/nickyrolly/dealls-test/internal/services/swipe"
 
 	"github.com/sirupsen/logrus"
@@ -26,6 +28,7 @@ type Config struct {
 	ProfileController        *profile.Controller
 	MatchesController        *MatchController
 	SwipesController         *swipe.Controller
+	SubscriptionsController  *subscription.Controller
 }
 
 func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config {
@@ -36,11 +39,13 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 	authSvc := authService.NewService(db, log)
 	profileSvc := profileService.NewService(db, log)
 	swipeSvc := swipeService.NewService(db, log)
+	subscriptionSvc := subscriptionService.NewService(db, log)
 
 	// Initialize controllers
 	authController := authentication.NewController(authSvc, log)
 	profileController := profile.NewController(log, profileSvc)
 	swipeController := swipe.NewController(log, swipeSvc)
+	subscriptionController := subscription.NewController(log, subscriptionSvc)
 
 	// Create route config
 	config := &Config{
@@ -49,6 +54,7 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 		RedisPool:                redisPool,
 		AuthenticationController: authController,
 		ProfileController:        profileController,
+		SubscriptionsController:  subscriptionController,
 		SwipesController:         swipeController,
 	}
 
@@ -108,6 +114,7 @@ func Setup(c *Config) error {
 			// r.Get("/matches", c.MatchesController.HandleGetMatches)
 			// r.Post("/like/{id}", c.SwipesController.HandleSwipe)
 			r.Post("/swipe", c.SwipesController.HandleSwipe)
+			r.Post("/subscription", c.SubscriptionsController.HandleSubscription)
 
 		})
 	})
