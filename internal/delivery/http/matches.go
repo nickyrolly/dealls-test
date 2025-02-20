@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -168,7 +167,6 @@ func (c *MatchController) HandleGetMatches(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Println("userIDStr : ", userIDStr)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to parse user ID")

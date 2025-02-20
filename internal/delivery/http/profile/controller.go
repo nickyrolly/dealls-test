@@ -2,7 +2,6 @@ package profile
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -30,7 +29,6 @@ func (c *Controller) HandleGetDiscovery(w http.ResponseWriter, r *http.Request) 
 
 	// Get user ID from context
 	userIDStr, ok := gorilla_context.Get(r, "user").(string)
-	fmt.Println("userIDStr : ", userIDStr)
 	if !ok {
 		c.log.Error("User session not found in context")
 
@@ -39,13 +37,10 @@ func (c *Controller) HandleGetDiscovery(w http.ResponseWriter, r *http.Request) 
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		fmt.Println("context userID : ", err)
-		// c.log.WithError(err).Error("Failed to parse user ID")
-		// http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		c.log.WithError(err).Error("Failed to parse user ID")
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println("userID : ", userID)
 
 	// Retrieve user preferences
 	preferences, err := c.service.GetUserPreference(userID)
@@ -122,13 +117,10 @@ func (c *Controller) HandleGetDiscovery(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("")
-	fmt.Println("--- HandleGetProfile")
 	w.Header().Set("Content-Type", "application/json")
 
 	// Get user ID from context
 	userIDStr, ok := gorilla_context.Get(r, "user").(string)
-	fmt.Println("userIDStr : ", userIDStr)
 	if !ok {
 		c.log.Error("User session not found in context")
 
@@ -137,16 +129,14 @@ func (c *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		fmt.Println("context userID : ", err)
-		// c.log.WithError(err).Error("Failed to parse user ID")
-		// http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		c.log.WithError(err).Error("Failed to parse user ID")
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	// Get user
 	user, err := c.service.GetUser(userID)
 	if err != nil {
-		fmt.Println("get user : ", err)
 		c.log.WithError(err).Error("Failed to get user")
 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
 			"success": false,
@@ -158,7 +148,6 @@ func (c *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	// Get profile
 	userProfile, err := c.service.GetUserProfile(userID)
 	if err != nil {
-		fmt.Println("get user profile : ", err)
 		c.log.WithError(err).Error("Failed to get user profile")
 		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
 			"success": false,
@@ -224,7 +213,6 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Println("userIDStr : ", userIDStr)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to parse user ID")
@@ -239,8 +227,6 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Printf("updates : %v\n", updates)
 
 	// Validate updates
 	// allowedFields := map[string]bool{
@@ -284,8 +270,6 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 }
 
 func (c *Controller) HandleUpdatePreferences(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("")
-	fmt.Println("--- HandleUpdatePreferences")
 	w.Header().Set("Content-Type", "application/json")
 
 	// Get user ID from context
@@ -296,7 +280,6 @@ func (c *Controller) HandleUpdatePreferences(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	fmt.Println("userIDStr : ", userIDStr)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.log.WithError(err).Error("Failed to parse user ID")
@@ -311,8 +294,6 @@ func (c *Controller) HandleUpdatePreferences(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Printf("updates : %v\n", updates)
 
 	// Update preferences
 	if err := c.service.UpdateUserPreference(userID, updates); err != nil {

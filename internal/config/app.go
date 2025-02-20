@@ -51,6 +51,7 @@ func Bootstrap(config *BootstrapConfig) {
 	swipeController := swipe.NewController(
 		config.Log,
 		swipeSvc,
+		subscriptionSvc,
 	)
 
 	subscriptionController := subscription.NewController(
