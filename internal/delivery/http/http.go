@@ -9,8 +9,11 @@ import (
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/healthcheck"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/middleware"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/profile"
+	"github.com/nickyrolly/dealls-test/internal/delivery/http/swipe"
 	authService "github.com/nickyrolly/dealls-test/internal/services/authentication"
 	profileService "github.com/nickyrolly/dealls-test/internal/services/profile"
+	swipeService "github.com/nickyrolly/dealls-test/internal/services/swipe"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -22,6 +25,7 @@ type Config struct {
 	AuthenticationController *authentication.Controller
 	ProfileController        *profile.Controller
 	MatchesController        *MatchController
+	SwipesController         *swipe.Controller
 }
 
 func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config {
@@ -31,10 +35,12 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 	// Initialize services
 	authSvc := authService.NewService(db, log)
 	profileSvc := profileService.NewService(db, log)
+	swipeSvc := swipeService.NewService(db, log)
 
 	// Initialize controllers
 	authController := authentication.NewController(authSvc, log)
 	profileController := profile.NewController(log, profileSvc)
+	swipeController := swipe.NewController(log, swipeSvc)
 
 	// Create route config
 	config := &Config{
@@ -43,6 +49,7 @@ func NewRouteConfig(router *chi.Mux, redisPool *redis.Pool, db *gorm.DB) *Config
 		RedisPool:                redisPool,
 		AuthenticationController: authController,
 		ProfileController:        profileController,
+		SwipesController:         swipeController,
 	}
 
 	return config
@@ -95,11 +102,12 @@ func Setup(c *Config) error {
 				r.Get("/", c.ProfileController.HandleGetProfile)
 				r.Put("/", c.ProfileController.HandleUpdateProfile)
 				r.Put("/preferences", c.ProfileController.HandleUpdatePreferences)
+				r.Get("/discovery", c.ProfileController.HandleGetDiscovery)
 			})
-			r.Get("/potential", c.ProfileController.HandleGetPotentialMatches)
+
 			// r.Get("/matches", c.MatchesController.HandleGetMatches)
-			r.Post("/like/{id}", c.ProfileController.HandleLikeProfile)
-			r.Post("/pass/{id}", c.ProfileController.HandlePassProfile)
+			// r.Post("/like/{id}", c.SwipesController.HandleSwipe)
+			r.Post("/swipe", c.SwipesController.HandleSwipe)
 
 		})
 	})
