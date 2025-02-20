@@ -9,6 +9,7 @@ import (
 	gorilla_context "github.com/gorilla/context"
 	"github.com/nickyrolly/dealls-test/common"
 	"github.com/nickyrolly/dealls-test/internal/services/profile"
+	"github.com/nickyrolly/dealls-test/internal/services/user"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,102 @@ func NewController(log *logrus.Logger, service *profile.Service) *Controller {
 		log:     log,
 		service: service,
 	}
+}
+
+func (c *Controller) HandleGetDiscovery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Get user ID from context
+	userIDStr, ok := gorilla_context.Get(r, "user").(string)
+	fmt.Println("userIDStr : ", userIDStr)
+	if !ok {
+		c.log.Error("User session not found in context")
+
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		fmt.Println("context userID : ", err)
+		// c.log.WithError(err).Error("Failed to parse user ID")
+		// http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("userID : ", userID)
+
+	// Retrieve user preferences
+	preferences, err := c.service.GetUserPreference(userID)
+	if err != nil {
+		c.log.WithError(err).Error("Failed to get user preferences")
+		common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"error":   "Failed to get user preferences",
+		})
+		return
+	}
+
+	var users []user.Entity
+	if preferences == nil {
+		if err := c.service.DB.Where("id != ?", userID).Order("last_active_at DESC").Limit(10).Find(&users).Error; err != nil {
+			c.log.WithError(err).Error("Failed to retrieve matching users")
+			common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+				"success": false,
+				"error":   "Failed to retrieve matching users",
+			})
+			return
+		}
+	} else {
+		if err := c.service.DB.Where("id != ? AND gender = ?", userID, preferences.Gender).Order("last_active_at DESC").Limit(10).Find(&users).Error; err != nil {
+			c.log.WithError(err).Error("Failed to retrieve matching users")
+			common.CustomResponseAPI(w, r, http.StatusInternalServerError, map[string]interface{}{
+				"success": false,
+				"error":   "Failed to retrieve matching users",
+			})
+			return
+		}
+	}
+
+	// // Update LastActiveAt
+	// user.LastActiveAt = time.Now() // This should work if user is properly initialized
+	// c.service.UpdateUser(&user) // Assuming you have an update method
+
+	// Query for users matching the preferred gender
+
+	// Retrieve photos for each user
+	var userProfiles []map[string]interface{}
+	for _, user := range users {
+		photos, err := c.service.GetUserPhotos(user.ID) // Assuming this method exists
+		if err != nil {
+			c.log.WithError(err).Error("Failed to get user photos")
+			continue // Skip this user if photos can't be fetched
+		}
+
+		preference, err := c.service.GetUserPreference(user.ID) // Assuming this method exists
+		if err != nil {
+			c.log.WithError(err).Error("Failed to get user preference")
+			continue // Skip this user if photos can't be fetched
+		}
+
+		profile, err := c.service.GetUserProfile(user.ID) // Assuming this method exists
+		if err != nil {
+			c.log.WithError(err).Error("Failed to get user profile")
+			continue // Skip this user if photos can't be fetched
+		}
+
+		userProfiles = append(userProfiles, map[string]interface{}{
+			"user":        user,
+			"photos":      photos,
+			"preferences": preference,
+			"profile":     profile,
+		})
+	}
+
+	// Return the list of matching users with their preferences and photos
+	common.CustomResponseAPI(w, r, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"users":   userProfiles,
+	})
 }
 
 func (c *Controller) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
@@ -145,6 +242,29 @@ func (c *Controller) HandleUpdateProfile(w http.ResponseWriter, r *http.Request)
 
 	fmt.Printf("updates : %v\n", updates)
 
+	// Validate updates
+	// allowedFields := map[string]bool{
+	// 	"height":     true,
+	// 	"weight":     true,
+	// 	"occupation": true,
+	// 	"education":  true,
+	// 	"religion":   true,
+	// 	"ethnicity":  true,
+	// 	"interests":  true,
+	// 	"about_me":   true,
+	// }
+
+	// for field := range updates {
+	// 	if !allowedFields[field] {
+	// 		c.log.WithField("field", field).Error("Invalid field in update request")
+	// 		common.CustomResponseAPI(w, r, http.StatusBadRequest, map[string]interface{}{
+	// 			"success": false,
+	// 			"error":   "Invalid field: " + field,
+	// 		})
+	// 		return
+	// 	}
+	// }
+
 	// Update profile
 	if err := c.service.UpdateUserProfile(userID, updates); err != nil {
 		c.log.WithError(err).Error("Failed to update user profile")
@@ -233,13 +353,7 @@ func (c *Controller) HandleLikeProfile(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Not implemented"})
 }
 
-func (c *Controller) HandlePassProfile(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotImplemented)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Not implemented"})
-}
-
-func (c *Controller) HandleGetPotentialMatches(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleSwipeProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotImplemented)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Not implemented"})

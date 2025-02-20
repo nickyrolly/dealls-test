@@ -6,8 +6,10 @@ import (
 	"github.com/nickyrolly/dealls-test/internal/delivery/http"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/authentication"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/profile"
+	"github.com/nickyrolly/dealls-test/internal/delivery/http/swipe"
 	authService "github.com/nickyrolly/dealls-test/internal/services/authentication"
 	profileService "github.com/nickyrolly/dealls-test/internal/services/profile"
+	swipeService "github.com/nickyrolly/dealls-test/internal/services/swipe"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -25,6 +27,7 @@ func Bootstrap(config *BootstrapConfig) {
 	// Initialize services
 	authSvc := authService.NewService(config.DB, config.Log)
 	profileSvc := profileService.NewService(config.DB, config.Log)
+	swipeSvc := swipeService.NewService(config.DB, config.Log)
 
 	// Initialize controllers
 	authController := authentication.NewController(
@@ -42,12 +45,18 @@ func Bootstrap(config *BootstrapConfig) {
 		profileSvc,
 	)
 
+	swipeController := swipe.NewController(
+		config.Log,
+		swipeSvc,
+	)
+
 	// Initialize route configuration with all dependencies
 	route := &http.Config{
 		Router:                   config.Router,
 		AuthenticationController: authController,
 		ProfileController:        profileController,
 		MatchesController:        matchController,
+		SwipesController:         swipeController,
 		RedisPool:                config.RedisGeneral,
 		DB:                       config.DB,
 	}

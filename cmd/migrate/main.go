@@ -7,6 +7,7 @@ import (
 
 	"github.com/nickyrolly/dealls-test/internal/config"
 	"github.com/nickyrolly/dealls-test/internal/services/profile"
+	"github.com/nickyrolly/dealls-test/internal/services/swipe"
 	"github.com/nickyrolly/dealls-test/internal/services/user"
 	"gorm.io/gorm"
 )
@@ -32,6 +33,7 @@ func main() {
 		&profile.UserPreference{}, // User preferences
 		&profile.UserMatch{},      // User matches
 		&profile.UserLike{},       // User likes
+		&swipe.Swipe{},            // User swipes
 	}
 
 	// Migrate all tables

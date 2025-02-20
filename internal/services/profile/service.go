@@ -57,11 +57,14 @@ func (s *Service) GetUserPhotos(userID uuid.UUID) ([]UserPhoto, error) {
 }
 
 func (s *Service) GetUserPreference(userID uuid.UUID) (*UserPreference, error) {
+	fmt.Printf("[GetUserPreference] userID : %v\n", userID)
 	var pref UserPreference
 	if err := s.DB.Where("user_id = ?", userID).First(&pref).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Printf("[GetUserPreference] userID : %v not found\n", userID)
 			return nil, nil
 		}
+		fmt.Printf("[GetUserPreference] userID : %v error : %v\n", userID, err)
 		return nil, err
 	}
 	return &pref, nil
@@ -137,6 +140,14 @@ func (s *Service) UpdateUserPreference(userID uuid.UUID, data map[string]interfa
 	}
 
 	return nil
+}
+
+func (s *Service) GetDiscovery(query string) ([]UserProfile, error) {
+	var profiles []UserProfile
+	if err := s.DB.Where("first_name LIKE ? OR last_name LIKE ?", "%"+query+"%", "%"+query+"%").Find(&profiles).Error; err != nil {
+		return nil, err
+	}
+	return profiles, nil
 }
 
 func (s *Service) CreateLike(like *UserLike) (*UserMatch, error) {
