@@ -6,9 +6,11 @@ import (
 	"github.com/nickyrolly/dealls-test/internal/delivery/http"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/authentication"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/profile"
+	"github.com/nickyrolly/dealls-test/internal/delivery/http/subscription"
 	"github.com/nickyrolly/dealls-test/internal/delivery/http/swipe"
 	authService "github.com/nickyrolly/dealls-test/internal/services/authentication"
 	profileService "github.com/nickyrolly/dealls-test/internal/services/profile"
+	subscriptionService "github.com/nickyrolly/dealls-test/internal/services/subscription"
 	swipeService "github.com/nickyrolly/dealls-test/internal/services/swipe"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -28,6 +30,7 @@ func Bootstrap(config *BootstrapConfig) {
 	authSvc := authService.NewService(config.DB, config.Log)
 	profileSvc := profileService.NewService(config.DB, config.Log)
 	swipeSvc := swipeService.NewService(config.DB, config.Log)
+	subscriptionSvc := subscriptionService.NewService(config.DB, config.Log)
 
 	// Initialize controllers
 	authController := authentication.NewController(
@@ -50,6 +53,11 @@ func Bootstrap(config *BootstrapConfig) {
 		swipeSvc,
 	)
 
+	subscriptionController := subscription.NewController(
+		config.Log,
+		subscriptionSvc,
+	)
+
 	// Initialize route configuration with all dependencies
 	route := &http.Config{
 		Router:                   config.Router,
@@ -57,6 +65,7 @@ func Bootstrap(config *BootstrapConfig) {
 		ProfileController:        profileController,
 		MatchesController:        matchController,
 		SwipesController:         swipeController,
+		SubscriptionsController:  subscriptionController,
 		RedisPool:                config.RedisGeneral,
 		DB:                       config.DB,
 	}
